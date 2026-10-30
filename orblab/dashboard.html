@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ORB Lab · MES</title>
+<style>
+:root{--bg:#0b0f17;--line:rgba(255,255,255,.08);--text:#e5e9f0;--dim:#8b95a7;--accent:#5b9dff;--pos:#34d399;--neg:#f87171;--warn:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;position:relative;min-height:100vh}
+body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;
+  background:radial-gradient(40% 40% at 20% 20%,rgba(91,157,255,.18),transparent 70%),radial-gradient(35% 35% at 80% 30%,rgba(139,92,246,.14),transparent 70%),radial-gradient(40% 40% at 50% 90%,rgba(52,211,153,.10),transparent 70%);animation:drift 22s ease-in-out infinite alternate}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-4%,5%) scale(1.06)}}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 16px 48px}
+header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.8px;background:linear-gradient(90deg,#fff,#9db8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--dim)}
+.glass,.card,.panel,.run{background:rgba(20,28,46,.55);-webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%);border:1px solid var(--line);border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 32px -16px rgba(0,0,0,.6)}
+.run{display:flex;align-items:center;gap:8px;border-radius:999px;padding:6px 14px;font-size:13px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--pos);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 6px var(--pos),0 0 0 0 rgba(52,211,153,.7)}70%{box-shadow:0 0 10px var(--pos),0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 6px var(--pos),0 0 0 0 rgba(52,211,153,0)}}
+.verdict{padding:20px 24px;margin-bottom:14px;border-left:4px solid var(--warn)}
+.verdict.bad{border-left-color:var(--neg)}.verdict.good{border-left-color:var(--pos)}
+.verdict .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:600}
+.verdict .v{font-size:28px;font-weight:800;letter-spacing:-.5px;margin:2px 0 4px}
+.verdict.bad .v{color:var(--neg);text-shadow:0 0 18px rgba(248,113,113,.45)}
+.verdict.warn .v{color:var(--warn);text-shadow:0 0 18px rgba(251,191,36,.35)}
+.verdict.good .v{color:var(--pos);text-shadow:0 0 18px rgba(52,211,153,.45)}
+.verdict p{margin:0;color:var(--text);max-width:820px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:14px}
+.card{padding:16px}
+.label{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.big{font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1.15;margin-top:4px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.note{color:var(--dim);font-size:12px}
+.panel{padding:18px;margin-bottom:14px;overflow:hidden}
+.panel h2{margin:0 0 4px;font-size:16px;font-weight:700}
+.panel .hint{color:var(--dim);font-size:12px;margin-bottom:12px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+th{color:var(--dim);font-weight:600;font-size:11px;letter-spacing:.05em;text-transform:uppercase;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);font-family:-apple-system,"Segoe UI",sans-serif}
+td{padding:8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tbody tr{transition:background .2s,transform .2s,box-shadow .2s}
+tbody tr:hover{background:linear-gradient(90deg,rgba(91,157,255,.14),rgba(91,157,255,.04));transform:translateX(3px);box-shadow:inset 3px 0 0 var(--accent)}
+tr:last-child td{border-bottom:0}
+.pos{color:var(--pos)}.neg{color:var(--neg)}.dim{color:var(--dim)}
+.pos.glow{text-shadow:0 0 14px rgba(52,211,153,.5)}.neg.glow{text-shadow:0 0 14px rgba(248,113,113,.5)}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;border:1px solid var(--line)}
+.tag.WIN{color:var(--pos);border-color:#1f6f55}.tag.LOSS{color:var(--neg);border-color:#7f3030}.tag.OPEN{color:var(--accent);border-color:#2f4a7a}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{background:none;color:var(--dim);border:1px solid var(--line);border-radius:8px;padding:4px 12px;cursor:pointer;font:inherit;transition:all .15s}
+.tabs button.on{color:var(--text);border-color:var(--accent);background:rgba(91,157,255,.14);box-shadow:0 0 14px -4px rgba(91,157,255,.6)}
+.two{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+@media(max-width:800px){.two{grid-template-columns:1fr}}
+.empty{color:var(--dim);padding:22px 0;text-align:center}
+.bar{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .6s}
+svg text{fill:var(--dim);font-size:11px}
+footer{color:var(--dim);font-size:12px;text-align:center;margin-top:24px;max-width:760px;margin-inline:auto}
+.in{animation:rise .5s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0)*60ms)}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>ORB Lab · MES</h1>
+      <div class="sub">Does the Opening Range Breakout have edge on Micro E-mini S&amp;P futures? · research, not advice</div>
+    </div>
+    <div class="run"><span class="dot"></span><span id="upd">loading…</span></div>
+  </header>
+
+  <div id="verdict" class="glass verdict in"><div class="k">Backtest verdict (out-of-sample)</div><div class="v">…</div></div>
+  <div class="grid" id="kpis"></div>
+
+  <div class="panel in" style="--i:3">
+    <h2>Backtest: in-sample vs. out-of-sample</h2>
+    <div class="hint" id="btHint"></div>
+    <div class="scroll" id="btTable"></div>
+  </div>
+
+  <div class="panel in" style="--i:4">
+    <h2>Backtest equity curve</h2>
+    <div class="hint">Cumulative result for one contract, after slippage and commission. Dashed line = start of out-of-sample data.</div>
+    <div class="tabs" id="btTabs"></div>
+    <div id="btCurve"></div>
+  </div>
+
+  <div class="two">
+    <div class="panel in" style="--i:5">
+      <h2>By year</h2>
+      <div class="hint">Is the result stable, or driven by one year?</div>
+      <div class="scroll" id="yearTable"></div>
+    </div>
+    <div class="panel in" style="--i:6">
+      <h2>Robustness grid</h2>
+      <div class="hint">Out-of-sample expectancy (R/trade) for other settings. Shown for transparency, never used to pick parameters.</div>
+      <div id="sens"></div>
+    </div>
+  </div>
+
+  <div class="panel in" style="--i:7">
+    <h2>Paper trading journal <span class="note" id="jLive"></span></h2>
+    <div class="grid" id="jKpis" style="margin-top:12px"></div>
+    <div id="jCurve"></div>
+    <div class="scroll" id="jTable"></div>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = (n, d = 2) => n == null ? "–" : Number(n).toFixed(d);
+const sg = (n, d = 2) => n == null ? "–" : (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n).toFixed(d);
+const usd = n => n == null ? "–" : (n < 0 ? "−$" : "$") + Math.abs(n).toLocaleString(undefined, {maximumFractionDigits: 0});
+const pct = n => n == null ? "–" : (n * 100).toFixed(1) + "%";
+const cls = n => n > 0.0005 ? "pos glow" : n < -0.0005 ? "neg glow" : "";
+let BT = null, btMode = "usd";
+
+function kpi(label, value, note, c = "") {
+  return `<div class="card"><div class="label">${label}</div><div class="big ${c}">${value}</div><div class="note">${note ?? ""}</div></div>`;
+}
+
+function curveSVG(pts, key, splitDate) {
+  if (!pts.length) return `<div class="empty">No closed trades yet.</div>`;
+  const W = 900, H = 260, m = {l:62, r:14, t:12, b:28};
+  const ys = pts.map(p => p[key]).concat([0]);
+  let lo = Math.min(...ys), hi = Math.max(...ys); if (hi === lo) { hi += 1; lo -= 1; }
+  const pad = (hi - lo) * .08; lo -= pad; hi += pad;
+  const x = i => m.l + (pts.length === 1 ? .5 : i / (pts.length - 1)) * (W - m.l - m.r);
+  const y = v => m.t + (1 - (v - lo) / (hi - lo)) * (H - m.t - m.b);
+  const line = pts.map((p, i) => `${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(" ");
+  const up = pts[pts.length - 1][key] >= 0, col = up ? "#34d399" : "#f87171";
+  const area = `${x(0)},${y(0)} ${line} ${x(pts.length - 1)},${y(0)}`;
+  let g = "";
+  for (let k = 0; k <= 4; k++) {
+    const v = lo + (hi - lo) * k / 4;
+    g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(255,255,255,.06)"/><text x="${m.l - 8}" y="${y(v) + 4}" text-anchor="end">${key === "usd" ? usd(v) : sg(v, 0) + "R"}</text>`;
+  }
+  g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(0)}" y2="${y(0)}" stroke="rgba(255,255,255,.25)"/>`;
+  const si = splitDate ? pts.findIndex(p => p.date >= splitDate) : -1;
+  if (si > 0) g += `<line x1="${x(si)}" x2="${x(si)}" y1="${m.t}" y2="${H - m.b}" stroke="#5b9dff" stroke-dasharray="5 4"/><text x="${x(si) + 6}" y="${m.t + 12}">out-of-sample →</text>`;
+  g += `<text x="${m.l}" y="${H - 8}">${esc(pts[0].date)}</text><text x="${W - m.r}" y="${H - 8}" text-anchor="end">${esc(pts[pts.length - 1].date)}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block" role="img" aria-label="Equity curve">
+    <defs><linearGradient id="g${key}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".25"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+    ${g}<polygon points="${area}" fill="url(#g${key})"/><polyline points="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/></svg>`;
+}
+
+function metricRow(name, m) {
+  if (!m || !m.trades) return `<tr><td>${name}</td><td colspan="9" class="dim">no trades</td></tr>`;
+  return `<tr><td>${name}</td><td>${m.trades}</td><td>${pct(m.win_rate)}</td><td>${fmt(m.avg_rr)}</td>
+    <td class="${cls(m.expectancy_r)}">${sg(m.expectancy_r, 3)}R</td>
+    <td>${m.ci95_r ? sg(m.ci95_r[0], 2) + " … " + sg(m.ci95_r[1], 2) : "–"}</td>
+    <td class="${cls(m.total_usd)}">${usd(m.total_usd)}</td><td class="neg">${usd(m.max_dd_usd)}</td><td>${fmt(m.sharpe)}</td></tr>`;
+}
+const HEAD = `<thead><tr><th>Period</th><th>Trades</th><th>Win rate</th><th>Avg RR</th><th>Expectancy</th><th>95% CI (R)</th><th>Total (1 ct)</th><th>Max DD</th><th>Sharpe</th></tr></thead>`;
+
+function renderBacktest(d) {
+  BT = d;
+  const v = d.verdict;
+  $("verdict").className = `glass verdict in ${v.tone}`;
+  $("verdict").innerHTML = `<div class="k">Backtest verdict (out-of-sample ${d.data.split} onward)</div><div class="v">${esc(v.label)}</div><p>${esc(v.text)}</p>`;
+  const o = d.metrics.OUT_OF_SAMPLE;
+  $("kpis").innerHTML = [
+    kpi("OOS expectancy", sg(o.expectancy_r, 3) + "R", "avg R per trade, after costs", cls(o.expectancy_r)),
+    kpi("OOS win rate", pct(o.win_rate), `breakeven ${pct(o.breakeven_win_rate)} at realized RR`),
+    kpi("Avg RR", fmt(o.avg_rr), `target is 2.0R; wins avg ${fmt(o.avg_win_r)}R`),
+    kpi("Max drawdown", usd(o.max_dd_usd), `${fmt(o.max_dd_r, 1)}R, 1 contract`, "neg glow"),
+    kpi("Sharpe", fmt(o.sharpe), "daily R, annualized"),
+    kpi("OOS trades", o.trades, `${d.data.sessions} sessions tested`),
+  ].join("");
+  $("btHint").textContent = `${d.data.file}: ${d.data.first} to ${d.data.last}. Rules fixed in advance (nothing optimized). ${d.data.roll_days_skipped} contract-roll days skipped. Costs: 1 tick slippage per side + $1.40 round-trip commission.`;
+  $("btTable").innerHTML = `<table>${HEAD}<tbody>${metricRow("In-sample (pre-2023)", d.metrics.IN_SAMPLE)}${metricRow("Out-of-sample (2023+)", d.metrics.OUT_OF_SAMPLE)}${metricRow("All data", d.metrics.ALL)}</tbody></table>`;
+  $("btTabs").innerHTML = ["usd", "r"].map(k => `<button class="${k === btMode ? "on" : ""}" data-k="${k}">${k === "usd" ? "Dollars (1 MES)" : "R multiples"}</button>`).join("");
+  $("btTabs").querySelectorAll("button").forEach(b => b.onclick = () => { btMode = b.dataset.k; renderBacktest(BT); });
+  $("btCurve").innerHTML = curveSVG(d.equity_curve, btMode, d.data.split);
+  $("yearTable").innerHTML = `<table style="min-width:0"><thead><tr><th>Year</th><th>Trades</th><th>Win</th><th>Expectancy</th><th>Total</th></tr></thead><tbody>` +
+    Object.entries(d.by_year).map(([y, m]) => `<tr><td>${y}</td><td>${m.trades}</td><td>${pct(m.win_rate)}</td><td class="${cls(m.expectancy_r)}">${sg(m.expectancy_r, 3)}R</td><td class="${cls(m.total_usd)}">${usd(m.total_usd)}</td></tr>`).join("") + `</tbody></table>`;
+  const ors = [...new Set(d.sensitivity.map(s => s.or_minutes))], tg = [...new Set(d.sensitivity.map(s => s.target_r))];
+  const cell = s => {
+    const e = s.expectancy_r, a = Math.min(.55, Math.abs(e) * 3 + .08), c = e >= 0 ? "52,211,153" : "248,113,113";
+    const base = s.or_minutes === 30 && s.target_r === 2;
+    return `<td style="background:rgba(${c},${a});${base ? "outline:1px solid #5b9dff;" : ""}text-align:center">${sg(e, 3)}</td>`;
+  };
+  $("sens").innerHTML = `<table style="min-width:0"><thead><tr><th>OR \\ target</th>${tg.map(t => `<th style="text-align:center">${t}R</th>`).join("")}</tr></thead><tbody>` +
+    ors.map(o => `<tr><td>${o} min</td>${tg.map(t => cell(d.sensitivity.find(s => s.or_minutes === o && s.target_r === t))).join("")}</tr>`).join("") + `</tbody></table><div class="note" style="margin-top:8px">Blue outline = the rules used above (30 min, 2R).</div>`;
+  $("foot").textContent = "Backtests are not predictions. A positive result here would still be one instrument over one stretch of market history. All trades shown are simulated or paper; no real money is at risk.";
+}
+
+function renderJournal(j) {
+  const m = j.metrics, n = m.trades || 0, need = j.min_trades_for_verdict;
+  $("jLive").textContent = `· refreshes every 15s · ${j.open} open`;
+  $("jKpis").innerHTML = [
+    kpi("Closed trades", n, `${Math.min(100, Math.round(n / need * 100))}% of the ${need} needed for a verdict<div class="bar"><i style="width:${Math.min(100, n / need * 100)}%"></i></div>`),
+    kpi("Win rate", n ? pct(m.win_rate) : "–", n ? `breakeven ${pct(m.breakeven_win_rate)}` : "no closed trades yet"),
+    kpi("Avg RR", n ? fmt(m.avg_rr) : "–", n ? `wins ${fmt(m.avg_win_r)}R / losses ${fmt(m.avg_loss_r)}R` : ""),
+    kpi("Expectancy", n ? sg(m.expectancy_r, 3) + "R" : "–", "avg R per trade", n ? cls(m.expectancy_r) : ""),
+    kpi("Paper P&L", n ? usd(m.total_usd) : "–", "1 contract", n ? cls(m.total_usd) : ""),
+  ].join("");
+  $("jCurve").innerHTML = n ? curveSVG(j.equity_curve, "usd") : "";
+  if (!j.entries.length) { $("jTable").innerHTML = `<div class="empty">No paper trades yet. The runner logs one at the first ORB signal.<br><span class="note">Until about ${need} trades close, the win rate here is noise.</span></div>`; return; }
+  $("jTable").innerHTML = `<table><thead><tr><th>Date</th><th>Setup</th><th>Dir</th><th>Entry</th><th>Stop</th><th>Target</th><th>Exit</th><th>Result</th><th>R</th><th>P&amp;L</th><th style="text-align:left">Notes</th></tr></thead><tbody>` +
+    j.entries.map(t => `<tr><td>${esc(t.trade_date)}</td><td>${esc(t.setup)}</td><td>${esc(t.direction)}</td><td>${fmt(t.entry)}</td><td>${fmt(t.stop)}</td><td>${fmt(t.target)}</td><td>${fmt(t.exit)}${t.exit_reason ? ` <span class="dim">${esc(t.exit_reason)}</span>` : ""}</td><td><span class="tag ${t.result}">${t.result}</span></td><td class="${cls(t.r_multiple)}">${t.r_multiple == null ? "–" : sg(t.r_multiple, 2)}</td><td class="${cls(t.pnl_usd)}">${t.pnl_usd == null ? "–" : usd(t.pnl_usd)}</td><td style="text-align:left;white-space:normal;min-width:220px" class="dim">${esc(t.notes)}</td></tr>`).join("") + `</tbody></table>`;
+}
+
+async function loadJournal() {
+  try {
+    const j = await (await fetch("/api/journal")).json();
+    renderJournal(j);
+    $("upd").textContent = "journal updated " + new Date().toLocaleTimeString();
+  } catch (e) { $("upd").textContent = "journal unreachable"; }
+}
+(async () => {
+  try {
+    const r = await fetch("/api/backtest");
+    if (!r.ok) throw new Error((await r.json()).error);
+    renderBacktest(await r.json());
+  } catch (e) { $("verdict").innerHTML = `<div class="k">No backtest results</div><div class="v">${esc(e.message)}</div>`; }
+  loadJournal();
+  setInterval(loadJournal, 15000);
+})();
+</script>
+</body>
+</html>

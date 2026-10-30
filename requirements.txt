@@ -1,0 +1,4 @@
+pandas>=2.0
+numpy>=1.26
+yfinance>=0.2.40   # only needed by the live paper runner
+tzdata             # US/Eastern timezone data on Windows

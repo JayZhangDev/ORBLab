@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+data/
+market_data/
+journal.db
+replay*.db
+*.db-journal
+.DS_Store
+# earlier standalone project and one-off scripts, not part of ORB Lab
+backtester/
+check_cost.py
+test_databento.py
+convert_databento.py
